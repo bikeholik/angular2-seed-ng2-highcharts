@@ -13,11 +13,20 @@ export class ProjectConfig extends SeedConfig {
       // {src: 'lodash/lodash.min.js', inject: 'libs'},
       { src: 'highcharts/highstock', inject: 'libs' },
       { src: 'highcharts/modules/map', inject: 'libs' },
-      { src: 'highcharts/modules/data', inject: 'libs' }
+      { src: 'highcharts/modules/data', inject: 'libs' },
+      { src: 'gpx-parse/dist/gpx-parse-browser.js', inject: 'libs' }
     ];
 
     const seedDependencies = this.NPM_DEPENDENCIES;
 
     this.NPM_DEPENDENCIES = seedDependencies.concat(additional_deps);
+
+    // this.SYSTEM_CONFIG_DEV.paths['gpx-parse'] =
+    //   `${this.APP_BASE}node_modules/gpx-parse`;
+    //
+    // this.SYSTEM_BUILDER_CONFIG.packages['gpx-parse'] = {
+    //     main: 'index.js',
+    //     defaultExtension : 'js'
+    // }
   }
 }
