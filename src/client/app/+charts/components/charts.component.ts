@@ -150,15 +150,24 @@ export class ChartsCmp implements OnInit {
           it.content = JSON.stringify(track);
           var dist = 0;
           var last = t.segments[0][0];
-          var data = new Array();
+          var elevation = new Array();
+          var speed = new Array();
           for(let seg of t.segments){
             for(let p of seg){
-              dist += gpxParse.utils.calculateDistance(p.lat, p.lon, last.lat, last.lon);
+              var segDist = gpxParse.utils.calculateDistance(p.lat, p.lon, last.lat, last.lon);
+              dist += segDist;
+
+              elevation.push([dist, p.elevation]);
+
+              var timeDiff = p.time.valueOf() - last.time.valueOf();
+              var sp = timeDiff == 0 ? 0 : segDist / timeDiff * 3600000;
+              speed.push([dist, sp]);
+
               last = p;
-              data.push([dist, p.elevation]);
             }
           }
-          console.log(data);
+
+          console.log('str: ' + JSON.stringify(speed));
 
           it.chartOptions = {
     				chart: {
@@ -167,10 +176,16 @@ export class ChartsCmp implements OnInit {
     				title: {
     					text: 'Elevation'
     				},
-    				series: [{
-    					name: 'elevation',
-    					data: data
-    				}]
+    				series: [
+              {
+      					name: 'elevation',
+      					data: elevation
+              },
+              {
+                name: 'speed',
+                data: speed
+              }
+            ]
     			};
         });
       }catch(e){
