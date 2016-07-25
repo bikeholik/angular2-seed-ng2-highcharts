@@ -11,29 +11,7 @@ declare var gpxParse : any;
   directives: [Ng2Highcharts, Ng2Highmaps, Ng2Highstocks]
 })
 export class ChartsCmp implements OnInit {
-	chartOptions = {
-		chart: {
-			type: 'line'
-		},
-		title: {
-			text: 'Fruit Consumption'
-		},
-		// xAxis: {
-		// 	categories: ['Apples', 'Bananas', 'Oranges']
-		// },
-		// yAxis: {
-		// 	title: {
-		// 		text: 'Fruit eaten'
-		// 	}
-		// },
-		series: [{
-			name: 'Jane',
-			data: [[1,1], [0,2], [9,4]]
-		}, {
-				name: 'John',
-				data: [[0,5], [1,7], [5,3]]
-			}]
-	};
+	chartOptions = { };
 	chartBar = {
 		chart: {
 			type: 'column'
@@ -174,14 +152,29 @@ export class ChartsCmp implements OnInit {
     					type: 'line'
     				},
     				title: {
-    					text: 'Elevation'
+    					text: 'Track'
     				},
+            yAxis: [
+              {
+          			title: {
+          				text: 'Elevation'
+          			}
+        		  },
+              {
+          			title: {
+          				text: 'Speed'
+          			},
+                max : 50
+        		  }
+            ],
     				series: [
               {
+                yAxis: 0,
       					name: 'elevation',
       					data: elevation
               },
               {
+                yAxis: 1,
                 name: 'speed',
                 data: speed
               }
