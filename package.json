@@ -71,8 +71,6 @@
     "gulp-concat-css": "^2.2.0",
     "gulp-clean-css": "^2.0.7",
     "is-ci": "^1.0.8",
-    "isstream": "^0.1.2",
-    "jasmine-core": "~2.4.1",
     "jasmine-spec-reporter": "^2.4.0",
     "karma": "~0.13.22",
     "karma-chrome-launcher": "~0.2.2",
@@ -129,5 +127,8 @@
     "rxjs": "5.0.0-beta.6",
     "systemjs": "0.19.26",
     "zone.js": "^0.6.12"
+  },
+  "engines" : {
+    "node": "6.x"
   }
 }
