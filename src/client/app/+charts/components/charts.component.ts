@@ -12,103 +12,6 @@ declare var gpxParse : any;
 })
 export class ChartsCmp implements OnInit {
 	chartOptions = { };
-	chartBar = {
-		chart: {
-			type: 'column'
-		},
-		xAxis: {
-			categories: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-		},
-		series: [
-			{
-				name: 'NC',
-				data: [7057, 6858, 6643, 6570, 6115, 107, 31, 635, 203, 2, 2]
-			}, {
-				name: 'OK',
-				data: [54047, 52484, 50591, 49479, 46677, 33, 156, 947, 408, 6, 2]
-			}, {
-				name: 'KO',
-				data: [11388, 11115, 10742, 10757, 10290, 973, 914, 4054, 732, 34, 2]
-			}, {
-				name: 'VALID',
-				data: [8836, 8509, 8255, 7760, 7621, 973, 914, 4054, 732, 34, 2]
-			}, {
-				name: 'CHECK',
-				data: [115, 162, 150, 187, 172, 973, 914, 4054, 732, 34, 2]
-			}, {
-				name: 'COR',
-				data: [12566, 12116, 11446, 10749, 10439, 973, 914, 4054, 732, 34, 2]
-			}
-		]
-	};
-	chartMap = {};
-	mapData = [
-		{
-			'code': 'DE.SH',
-			'value': 728
-		},
-		{
-			'code': 'DE.BE',
-			'value': 710
-		},
-		{
-			'code': 'DE.MV',
-			'value': 963
-		},
-		{
-			'code': 'DE.HB',
-			'value': 541
-		},
-		{
-			'code': 'DE.HH',
-			'value': 622
-		},
-		{
-			'code': 'DE.RP',
-			'value': 866
-		},
-		{
-			'code': 'DE.SL',
-			'value': 398
-		},
-		{
-			'code': 'DE.BY',
-			'value': 785
-		},
-		{
-			'code': 'DE.SN',
-			'value': 223
-		},
-		{
-			'code': 'DE.ST',
-			'value': 605
-		},
-		{
-			'code': 'DE.',
-			'value': 361
-		},
-		{
-			'code': 'DE.NW',
-			'value': 237
-		},
-		{
-			'code': 'DE.BW',
-			'value': 157
-		},
-		{
-			'code': 'DE.HE',
-			'value': 134
-		},
-		{
-			'code': 'DE.NI',
-			'value': 136
-		},
-		{
-			'code': 'DE.TH',
-			'value': 704
-		}
-	];
-	chartStock = {};
 
   content = '';
 
@@ -116,20 +19,46 @@ export class ChartsCmp implements OnInit {
 
 	constructor(private http: Http) { }
 
-	ngOnInit(): any {
-		setInterval(() => {
-      try{
-        var it = this;
-        gpxParse.parseGpx(this.gpxXml, function(error, track) {
+  changeListener($event) : void {
+    var it = this;
+    it.content = "Reading...";
+
+    var file:File = $event.target.files[0];
+    var myReader:FileReader = new FileReader();
+
+    myReader.onloadend = function(e){
+      // you can perform an action with readed data here
+      console.log(myReader.result);
+      it.chartTrack(myReader.result);
+    }
+
+    myReader.readAsText(file);
+  }
+
+  private withMax(value : number, maxes : Map<string, number>, type : string) : void {
+      if(maxes[type] == undefined || value > maxes[type]){
+        maxes[type] = value;
+      }
+  }
+
+  private chartTrack(gpxAsXml) : void {
+    try{
+      var it = this;
+      gpxParse.parseGpx(gpxAsXml, function(error, track) {
+        if(error){
           console.log('ERROR: ' + error);
+          it.content = error;
+        } else {
+
           console.log('DATA: ' + track);
           console.log('str: ' + JSON.stringify(track));
-          var t = track.tracks[0];
+          let t = track.tracks[0];
           it.content = JSON.stringify(track);
-          var dist = 0;
-          var last = t.segments[0][0];
-          var elevation = new Array();
-          var speed = new Array();
+          let dist = 0;
+          let last = t.segments[0][0];
+          let elevation = new Array();
+          let speed = new Array();
+          let maxes : Map<string, number> = new Map<string, number>();
           for(let seg of t.segments){
             for(let p of seg){
               var segDist = gpxParse.utils.calculateDistance(p.lat, p.lon, last.lat, last.lon);
@@ -137,9 +66,13 @@ export class ChartsCmp implements OnInit {
 
               elevation.push([dist, p.elevation]);
 
+              it.withMax(p.elevation, maxes, 'elevation');
+
               var timeDiff = p.time.valueOf() - last.time.valueOf();
               var sp = timeDiff == 0 ? 0 : segDist / timeDiff * 3600000;
               speed.push([dist, sp]);
+
+              it.withMax(sp, maxes, 'speed');
 
               last = p;
             }
@@ -148,30 +81,34 @@ export class ChartsCmp implements OnInit {
           console.log('str: ' + JSON.stringify(speed));
 
           it.chartOptions = {
-    				chart: {
-    					type: 'line'
-    				},
-    				title: {
-    					text: 'Track'
-    				},
+            chart: {
+              type: 'line'
+            },
+            title: {
+              text: 'Track'
+            },
             yAxis: [
               {
-          			title: {
-          				text: 'Elevation'
-          			}
-        		  },
+                title: {
+                  text: 'Elevation'
+                },
+                max : maxes['elevation'] * 1.1,
+                endOnTick:false 
+              },
               {
-          			title: {
-          				text: 'Speed'
-          			},
-                max : 50
-        		  }
+                title: {
+                  text: 'Speed'
+                },
+                // TODO find max and add 10%
+                max : maxes['speed'] * 1.1,
+                endOnTick:false
+              }
             ],
-    				series: [
+            series: [
               {
                 yAxis: 0,
-      					name: 'elevation',
-      					data: elevation
+                name: 'elevation',
+                data: elevation
               },
               {
                 yAxis: 1,
@@ -179,72 +116,17 @@ export class ChartsCmp implements OnInit {
                 data: speed
               }
             ]
-    			};
-        });
-      }catch(e){
-        console.log(e);
-      }
-		}, 3000);
+          };
+        }
+      });
+    }catch(e){
+      console.log(e);
+    }
+  }
 
-		//Stock
-		this.http.get('./assets/aapl-c.json').subscribe(
-			(aaplc : any) => {
-				this.chartStock = {
-					rangeSelector: {
-						selected: 1
-					},
-					title: {
-						text: 'AAPL Stock Price'
-					},
-					series: [{
-						name: 'AAPL',
-						data: aaplc.json(),
-						tooltip: {
-							valueDecimals: 2
-						}
-					}]
-				};
-			},
-			(err : any) => {
-				console.error('Somethin went wrong', err);
-			}
-		);
+	ngOnInit(): any {
 
-		//Map
-		this.http.get('./assets/geojson.json').subscribe(
-			(geojson : any) => {
-				this.chartMap = {
-					title: {
-						text: 'GeoJSON in Highmaps'
-					},
-					mapNavigation: {
-						enabled: true,
-						buttonOptions: {
-							verticalAlign: 'bottom'
-						}
-					},
-					colorAxis: {
-					},
-					series: [{
-						data: this.mapData,
-						mapData: geojson.json(),
-						joinBy: ['code_hasc', 'code'],
-						name: 'Random data',
-						states: {
-							hover: {
-								color: '#BADA55'
-							}
-						},
-						dataLabels: {
-							enabled: true,
-							format: '{point.properties.postal}'
-						}
-					}]
-				};
-			},
-			(err : any) => {
-				console.error('Somethin went wrong', err);
-			}
-		);
-	}
+    this.chartTrack(this.gpxXml);
+
+  }
 }
