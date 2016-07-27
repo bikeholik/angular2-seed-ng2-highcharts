@@ -121,6 +121,7 @@
     "es6-shim": "0.35.0",
     "file-api": "0.10.4",
     "gpx-parse": "^0.10.4",
+    "gulp": "^3.9.1",
     "highcharts": "^4.2.3",
     "ng2-highcharts": "^0.3.3",
     "reflect-metadata": "0.1.2",
